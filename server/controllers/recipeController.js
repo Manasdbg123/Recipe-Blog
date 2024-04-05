@@ -1,6 +1,7 @@
 require('../models/database');
 const Category = require('../models/Category');
 const Recipe = require('../models/Recipe');
+const Users = require('../models/Users');
 
 /**
  * GET /
@@ -179,10 +180,77 @@ exports.submitRecipeOnPost = async(req, res) => {
 //   res.render('about',{ title: 'Cooking Blog - About', categories, food } )
 // }
 
+exports.registerFunctionality = async (req, res) => {
+  try {
+    const {email, password} = req.body;
+    console.log(email, password)
+    const user = await Users.findOne({email: email})
+    if (user){
+      res.status(500).json({message:"user already exists"})
+    }
+    const newRecipe = new Users({
+      email: email,
+      password: password
+    });
+    await newRecipe.save();
+    res.status(200).json("success");
+  } catch (error) {
+    res.status(500).json({message:error})
+  }
+  
+}
+
+// Define a route for the login page
+// app.post('/login', (req, res) => {
+//   const { email, password } = req.body;
+//   User.findOne({ email }, (err, user) => {
+//     if (err) {
+//       console.error(err);
+//       res.redirect('/login');
+//     } else if (!user) {
+//       res.render('login', { message: 'User not found' });
+//     } else if (password !== user.password) {
+//       res.render('login', { message: 'Incorrect password' });
+//     } else {
+//       // Authenticate the user and redirect to the dashboard
+//       req.session.userId = user._id;
+//       res.redirect('/dashboard');
+//     }
+//   });
+// });
+// Define the login controller function
+
 exports.about = async(req, res) => {
   const infoErrorsObj = req.flash('infoErrors');
   const infoSubmitObj = req.flash('infoSubmit');
   res.render('about', { title: 'Cooking Blog - About', infoErrorsObj, infoSubmitObj  } );
 }
+
+exports.login = async(req, res) => {
+  res.render('base' );
+}
+
+exports.register = async(req, res)=>{
+  res.render('reg');
+}
+
+exports.loginFunctionality = async(req, res) =>{
+  const { email, password } = req.body;
+  Users.findOne({ email }, (err, user) => {
+    if (err) {
+      console.error(err);
+      res.redirect('/login');
+    } else if (!user) {
+      res.render('base', { message: 'User not found' });
+    } else if (password !== user.password) {
+      res.render('base', { message: 'Incorrect password' });
+    } else {
+      // Authenticate the user and redirect to the dashboard
+      req.session.userId = user._id;
+      res.redirect('/dashboard');
+    }
+  });
+}
+
 
 
